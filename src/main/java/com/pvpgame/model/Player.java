@@ -15,6 +15,9 @@ public class Player {
     private Long id;
 
     private String name;
+
+    private String lockedBy;
+
     @ManyToOne
     private Location location;
 }

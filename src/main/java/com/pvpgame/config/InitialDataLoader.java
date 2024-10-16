@@ -39,11 +39,11 @@ public class InitialDataLoader implements CommandLineRunner {
                 .y(0)
                 .build();
 
-        location1.getNeighbors().put(Direction.UP, location2);
-        location1.getNeighbors().put(Direction.RIGHT, location3);
+        location1.getNeighbors().put(Direction.EAST, location2);
+        location1.getNeighbors().put(Direction.NORTH, location3);
 
-        location2.getNeighbors().put(Direction.DOWN, location1);
-        location3.getNeighbors().put(Direction.LEFT, location1);
+        location2.getNeighbors().put(Direction.SOUTH, location1);
+        location3.getNeighbors().put(Direction.WEST, location1);
 
         locationRepository.saveAll(Arrays.asList(location1, location2, location3));
 
