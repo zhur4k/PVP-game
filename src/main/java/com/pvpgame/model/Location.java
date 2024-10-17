@@ -16,12 +16,12 @@ import java.util.Map;
 @Builder
 @Table(name = "t_location")
 public class Location {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     Long id;
 
     private int x;
+
     private int y;
 
     @Builder.Default
