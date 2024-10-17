@@ -1,0 +1,6 @@
+springdoc:
+  packages-to-scan: com.pvpgame.controller
+  api-docs:
+    path: /api-docs
+server:
+  port: 8081
