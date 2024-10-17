@@ -10,6 +10,7 @@ import com.pvpgame.repository.PlayerRepository;
 import com.pvpgame.service.PlayerService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -22,15 +23,15 @@ public class PlayerServiceImpl implements PlayerService {
     private final PlayerDtoMapper playerDtoMapper;
 
     @Override
+    @Transactional
     public void selectPlayer(Long playerId, String sessionId) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId));
 
-        if(player.getLockedBy().equals(sessionId)){
-            throw new PlayerAlreadySelectedByUserException(playerId);
-        }
-
-        if(player.getLockedBy() != null){
+        if (player.getLockedBy() != null) {
+            if (player.getLockedBy().equals(sessionId)) {
+                throw new PlayerAlreadySelectedByUserException(playerId);
+            }
             throw new PlayerAlreadySelectedException(playerId);
         }
 
@@ -40,6 +41,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Transactional
     public void unlockPlayer(Long playerId, String sessionId) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId));
@@ -51,12 +53,14 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public PlayerDto getPlayer(Long playerId) {
         return playerDtoMapper.apply(playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId)));
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<PlayerDto> getAllPlayers() {
         List<Player> players = playerRepository.findAll();
 
@@ -82,6 +86,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
+    @Transactional
     public PlayerDto movePlayer(Long playerId, Direction direction, String sessionId) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId));
