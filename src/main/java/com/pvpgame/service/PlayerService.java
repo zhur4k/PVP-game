@@ -1,5 +1,6 @@
 package com.pvpgame.service;
 
+import com.pvpgame.dto.PlayerDto;
 import com.pvpgame.model.Direction;
 import com.pvpgame.model.Player;
 import org.springframework.stereotype.Service;
@@ -13,11 +14,11 @@ public interface PlayerService {
 
     void unlockPlayer(Long playerId, String sessionId);
 
-    Player getPlayer(Long playerId);
+    PlayerDto getPlayer(Long playerId);
 
-    List<Player> getAllPlayers();
+    List<PlayerDto> getAllPlayers();
 
     void verifyAccess(Player player, String sessionId);
 
-    Player movePlayer(Long playerId, Direction direction, String sessionId);
+    PlayerDto movePlayer(Long playerId, Direction direction, String sessionId);
 }

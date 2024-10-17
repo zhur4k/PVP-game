@@ -1,5 +1,7 @@
 package com.pvpgame.service.impl;
 
+import com.pvpgame.dto.PlayerDto;
+import com.pvpgame.dto.mapper.PlayerDtoMapper;
 import com.pvpgame.exception.*;
 import com.pvpgame.model.Direction;
 import com.pvpgame.model.Location;
@@ -10,12 +12,14 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class PlayerServiceImpl implements PlayerService {
 
     private final PlayerRepository playerRepository;
+    private final PlayerDtoMapper playerDtoMapper;
 
     @Override
     public void selectPlayer(Long playerId, String sessionId) {
@@ -47,14 +51,17 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Player getPlayer(Long playerId) {
-        return playerRepository.findById(playerId)
-                .orElseThrow(() -> new PlayerNotFoundException(playerId));
+    public PlayerDto getPlayer(Long playerId) {
+        return playerDtoMapper.apply(playerRepository.findById(playerId)
+                .orElseThrow(() -> new PlayerNotFoundException(playerId)));
     }
 
     @Override
-    public List<Player> getAllPlayers() {
-        return playerRepository.findAll();
+    public List<PlayerDto> getAllPlayers() {
+        return playerRepository.findAll()
+                .stream()
+                .map(playerDtoMapper)
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -69,7 +76,7 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    public Player movePlayer(Long playerId, Direction direction, String sessionId) {
+    public PlayerDto movePlayer(Long playerId, Direction direction, String sessionId) {
         Player player = playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId));
 
@@ -84,6 +91,6 @@ public class PlayerServiceImpl implements PlayerService {
 
         player.setLocation(newLocation);
 
-        return playerRepository.save(player);
+        return playerDtoMapper.apply(playerRepository.save(player));
     }
 }
