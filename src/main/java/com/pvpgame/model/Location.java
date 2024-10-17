@@ -14,6 +14,7 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "t_location")
 public class Location {
 
     @Id
@@ -34,8 +35,9 @@ public class Location {
     @MapKeyEnumerated(EnumType.STRING)
     private Map<Direction, Location> neighbors = new HashMap<>();
 
-    @OneToMany(mappedBy = "location")
+    @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
     private List<Player> players = new ArrayList<>();
-    @OneToMany(mappedBy = "location")
+
+    @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
     private List<Enemy> enemies = new ArrayList<>();
 }
