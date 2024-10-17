@@ -29,7 +29,6 @@ public class LocationServiceImpl implements LocationService {
     private final LocationDtoMapper locationDtoMapper;
 
     @Override
-    @Transactional(readOnly = true)
     public List<PlayerDto> getPlayersAtLocation(Long locationId) {
         List<Player> players = locationRepository.findPlayersByLocationId(locationId);
 
@@ -44,7 +43,6 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<EnemyDto> getEnemiesAtLocation(Long locationId) {
         List<Enemy> enemies = locationRepository.findEnemiesByLocationId(locationId);
 
@@ -59,7 +57,6 @@ public class LocationServiceImpl implements LocationService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<LocationDto> getAllLocations() {
         List<Location> locations = locationRepository.findAll();
 

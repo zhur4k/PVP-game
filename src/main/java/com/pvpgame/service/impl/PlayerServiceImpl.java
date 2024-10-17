@@ -53,14 +53,12 @@ public class PlayerServiceImpl implements PlayerService {
     }
 
     @Override
-    @Transactional(readOnly = true)
     public PlayerDto getPlayer(Long playerId) {
         return playerDtoMapper.apply(playerRepository.findById(playerId)
                 .orElseThrow(() -> new PlayerNotFoundException(playerId)));
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<PlayerDto> getAllPlayers() {
         List<Player> players = playerRepository.findAll();
 
