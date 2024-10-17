@@ -58,7 +58,13 @@ public class PlayerServiceImpl implements PlayerService {
 
     @Override
     public List<PlayerDto> getAllPlayers() {
-        return playerRepository.findAll()
+        List<Player> players = playerRepository.findAll();
+
+        if(players.isEmpty()){
+            throw new NoContentException("No locations found");
+        }
+
+        return players
                 .stream()
                 .map(playerDtoMapper)
                 .collect(Collectors.toList());

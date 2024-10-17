@@ -8,6 +8,7 @@ import com.pvpgame.dto.mapper.LocationDtoMapper;
 import com.pvpgame.dto.mapper.PlayerDtoMapper;
 import com.pvpgame.exception.NoContentException;
 import com.pvpgame.model.Enemy;
+import com.pvpgame.model.Location;
 import com.pvpgame.model.Player;
 import com.pvpgame.repository.LocationRepository;
 import com.pvpgame.service.LocationService;
@@ -56,7 +57,13 @@ public class LocationServiceImpl implements LocationService {
 
     @Override
     public List<LocationDto> getAllLocations() {
-        return locationRepository.findAll()
+        List<Location> locations = locationRepository.findAll();
+
+        if(locations.isEmpty()){
+            throw new NoContentException("No locations found");
+        }
+
+        return locations
                 .stream()
                 .map(locationDtoMapper)
                 .collect(Collectors.toList());
