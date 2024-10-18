@@ -16,6 +16,6 @@ public record LocationDTO(
 
         List<Long> players,
 
-        List<Long> enemies
+        Long enemies
 ) {
 }

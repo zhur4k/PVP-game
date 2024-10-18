@@ -18,7 +18,7 @@ import java.util.Map;
 public class Location {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
+    private Long id;
 
     private int x;
 
@@ -38,6 +38,6 @@ public class Location {
     @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
     private List<Player> players = new ArrayList<>();
 
-    @OneToMany(mappedBy = "location", fetch = FetchType.LAZY)
-    private List<Enemy> enemies = new ArrayList<>();
+    @OneToOne(mappedBy = "location", fetch = FetchType.LAZY)
+    private Enemy enemy;
 }

@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(BattleRequiredException.class)
+    public ResponseEntity<String> handlerBattleRequired(BattleRequiredException ex){
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
     @ExceptionHandler(PlayerNotFoundException.class)
     public ResponseEntity<String> handlerPlayerNotFound(PlayerNotFoundException ex){
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Player not found: " + ex.getMessage());

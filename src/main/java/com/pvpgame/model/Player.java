@@ -19,6 +19,8 @@ public class Player {
 
     private String lockedBy;
 
+    private boolean shouldBattle;
+
     @ManyToOne(fetch = FetchType.LAZY)
     private Location location;
 }

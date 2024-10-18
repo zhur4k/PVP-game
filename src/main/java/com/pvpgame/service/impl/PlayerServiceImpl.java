@@ -84,6 +84,10 @@ public class PlayerServiceImpl implements PlayerService {
         Player player = playerRepository.findBasicByLockedBy(sessionId)
                 .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
+        if(player.isShouldBattle()){
+            throw new BattleRequiredException("Player must engage in battle before moving.");
+        }
+
         Location location = player.getLocation();
         Location newLocation = location.getNeighbors().get(direction);
 
@@ -96,6 +100,11 @@ public class PlayerServiceImpl implements PlayerService {
 
         Player updatedPlayer = playerRepository.findByLockedBy(sessionId)
                 .orElseThrow(() -> new PlayerNotFoundException(sessionId));
+
+        if(updatedPlayer.getLocation().getEnemy() != null){
+            player.setShouldBattle(true);
+            playerRepository.save(player);
+        }
 
         return playerContextDTOMapper.apply(updatedPlayer);
     }
