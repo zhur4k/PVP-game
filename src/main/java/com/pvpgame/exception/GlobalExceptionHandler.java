@@ -8,6 +8,21 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(PlayerAlreadyInBattleException.class)
+    public ResponseEntity<String> handlePlayerAlreadyInBattle(PlayerAlreadyInBattleException ex) {
+        return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(EnemyNotFoundException.class)
+    public ResponseEntity<String> handleEnemyNotFound(EnemyNotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BattleNotFoundForPlayerException.class)
+    public ResponseEntity<String> handlerBattleNotFoundForPlayer(BattleNotFoundForPlayerException ex){
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(BattleRequiredException.class)
     public ResponseEntity<String> handlerBattleRequired(BattleRequiredException ex){
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
