@@ -1,9 +1,6 @@
 package com.pvpgame.service.impl;
 
-import com.pvpgame.exception.BattleNotFoundForPlayerException;
-import com.pvpgame.exception.EnemyNotFoundException;
-import com.pvpgame.exception.PlayerAlreadyInBattleException;
-import com.pvpgame.exception.PlayerNotFoundException;
+import com.pvpgame.exception.*;
 import com.pvpgame.model.Battle;
 import com.pvpgame.model.BattleState;
 import com.pvpgame.model.Enemy;
@@ -28,7 +25,9 @@ public class BattleServiceImpl implements BattleService {
         Player player = playerRepository.findSimpleByLockedBy(sessionId)
                 .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
-        if (battleRepository.existsByPlayer(player)) {
+        checkBattleTarget(player);
+
+        if (battleRepository.existsByPlayerAndBattleState(player, BattleState.IN_BATTLE)) {
             throw new PlayerAlreadyInBattleException("Player is already in battle.");
         }
 
@@ -53,11 +52,28 @@ public class BattleServiceImpl implements BattleService {
         Player player = playerRepository.findSimpleByLockedBy(sessionId)
                 .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
-        Battle battle = battleRepository.findByPlayer(player)
-                .orElseThrow(() -> new BattleNotFoundForPlayerException("Player is not currently in battle."));
+        checkBattleTarget(player);
 
-        battle.setBattleState(BattleState.ESCAPED);
+        if (battleRepository.existsByPlayerAndBattleState(player, BattleState.IN_BATTLE)) {
+            throw new PlayerAlreadyInBattleException("Player is already in battle.");
+        }
+
+        Enemy enemy = player.getLocation().getEnemy();
+        if (enemy == null) {
+            throw new EnemyNotFoundException("No enemy to fight at this location.");
+        }
+
+        Battle battle = Battle
+                .builder()
+                .battleState(BattleState.ESCAPED)
+                .player(player)
+                .enemy(enemy)
+                .build();
+
         battleRepository.save(battle);
+
+        player.setShouldBattle(false);
+        playerRepository.save(player);
     }
 
     @Override
@@ -66,10 +82,21 @@ public class BattleServiceImpl implements BattleService {
         Player player = playerRepository.findSimpleByLockedBy(sessionId)
                 .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
-        Battle battle = battleRepository.findByPlayer(player)
+        checkBattleTarget(player);
+
+        Battle battle = battleRepository.findByPlayerAndBattleState(player, BattleState.IN_BATTLE)
                 .orElseThrow(() -> new BattleNotFoundForPlayerException("Player is not currently in battle."));
 
         battle.setBattleState(BattleState.FINISH_BATTLE);
         battleRepository.save(battle);
+        player.setShouldBattle(false);
+        playerRepository.save(player);
+    }
+
+    @Override
+    public void checkBattleTarget(Player player) {
+        if(!player.isShouldBattle()){
+            throw new NoBattleTargetException("Cannot initiate battle as there is no target.");
+        }
     }
 }

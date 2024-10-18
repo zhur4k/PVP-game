@@ -26,14 +26,14 @@ public class PlayerController {
 
     private final PlayerService playerService;
 
-    @Operation(summary = "Get all players", description = "Fetches a list of all players.")
+    @Operation(summary = "Get all free players", description = "Fetches a list of all free players.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Successfully retrieved the list of players"),
             @ApiResponse(responseCode = "204", description = "No content available"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping
-    public ResponseEntity<List<PlayerToChooseDTO>> getAllPlayers(){
+    public ResponseEntity<List<PlayerToChooseDTO>> getAllFreePlayers(){
         return ResponseEntity.ok(playerService.getAllFreePlayers());
     }
 

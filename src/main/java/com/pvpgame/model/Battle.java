@@ -17,9 +17,11 @@ public class Battle {
 
     private BattleState battleState;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "player_id")
     private Player player;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "enemy_id")
     private Enemy enemy;
 }

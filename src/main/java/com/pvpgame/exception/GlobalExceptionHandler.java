@@ -8,6 +8,11 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
+    @ExceptionHandler(NoBattleTargetException.class)
+    public ResponseEntity<String> handleNoBattleTarget(NoBattleTargetException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
+    }
+
     @ExceptionHandler(PlayerAlreadyInBattleException.class)
     public ResponseEntity<String> handlePlayerAlreadyInBattle(PlayerAlreadyInBattleException ex) {
         return ResponseEntity.status(HttpStatus.CONFLICT).body(ex.getMessage());
