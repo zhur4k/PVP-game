@@ -11,12 +11,15 @@ import java.util.Optional;
 @Repository
 public interface PlayerRepository extends JpaRepository<Player, Long> {
 
-    @EntityGraph(attributePaths = {"location", "location.neighbors", "location.players", "location.enemies"})
+    @EntityGraph(attributePaths = {"location", "location.neighbors", "location.players", "location.enemy"})
     Optional<Player> findById(Long playerId);
+
+    @EntityGraph(attributePaths = {"location", "location.enemy"})
+    Optional<Player> findSimpleByLockedBy(String sessionId);
 
     List<Player> findAllByLockedBy(String sessionId);
 
-    @EntityGraph(attributePaths = {"location", "location.neighbors", "location.players", "location.enemies"})
+    @EntityGraph(attributePaths = {"location", "location.neighbors", "location.players", "location.enemy"})
     Optional<Player> findByLockedBy(String sessionId);
 
     @EntityGraph(attributePaths = {"location", "location.neighbors"})

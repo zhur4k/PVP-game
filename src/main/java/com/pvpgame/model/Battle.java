@@ -9,16 +9,17 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "t_enemy")
-public class Enemy {
+@Table(name = "t_battle")
+public class Battle {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
-
-    private Integer strength;
+    private BattleState battleState;
 
     @OneToOne(fetch = FetchType.LAZY)
-    private Location location;
+    private Player player;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    private Enemy enemy;
 }
