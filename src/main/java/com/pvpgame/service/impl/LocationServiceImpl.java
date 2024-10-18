@@ -14,7 +14,6 @@ import com.pvpgame.repository.LocationRepository;
 import com.pvpgame.service.LocationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -32,10 +31,6 @@ public class LocationServiceImpl implements LocationService {
     public List<PlayerDto> getPlayersAtLocation(Long locationId) {
         List<Player> players = locationRepository.findPlayersByLocationId(locationId);
 
-        if(players.isEmpty()){
-            throw new NoContentException("No players found at location ID: " + locationId);
-        }
-
         return players
                 .stream()
                 .map(playerDtoMapper)
@@ -46,10 +41,6 @@ public class LocationServiceImpl implements LocationService {
     public List<EnemyDto> getEnemiesAtLocation(Long locationId) {
         List<Enemy> enemies = locationRepository.findEnemiesByLocationId(locationId);
 
-        if(enemies.isEmpty()){
-            throw new NoContentException("No enemies found at location ID: " + locationId);
-        }
-
         return enemies
                 .stream()
                 .map(enemyDtoMapper)
@@ -59,10 +50,6 @@ public class LocationServiceImpl implements LocationService {
     @Override
     public List<LocationDto> getAllLocations() {
         List<Location> locations = locationRepository.findAll();
-
-        if(locations.isEmpty()){
-            throw new NoContentException("No locations found");
-        }
 
         return locations
                 .stream()

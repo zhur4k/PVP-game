@@ -21,4 +21,6 @@ public interface PlayerService {
     void verifyAccess(Player player, String sessionId);
 
     PlayerDto movePlayer(Long playerId, Direction direction, String sessionId);
+
+    void releasePlayersBySession(String sessionId);
 }

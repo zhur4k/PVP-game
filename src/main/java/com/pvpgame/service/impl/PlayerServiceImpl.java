@@ -62,10 +62,6 @@ public class PlayerServiceImpl implements PlayerService {
     public List<PlayerDto> getAllPlayers() {
         List<Player> players = playerRepository.findAll();
 
-        if(players.isEmpty()){
-            throw new NoContentException("No locations found");
-        }
-
         return players
                 .stream()
                 .map(playerDtoMapper)
@@ -101,5 +97,17 @@ public class PlayerServiceImpl implements PlayerService {
         player.setLocation(newLocation);
 
         return playerDtoMapper.apply(playerRepository.save(player));
+    }
+
+    @Override
+    @Transactional
+    public void releasePlayersBySession(String sessionId) {
+        List<Player> lockedPlayers = playerRepository.findByLockedBy(sessionId);
+
+        for (Player player : lockedPlayers){
+            player.setLockedBy(null);
+        }
+
+        playerRepository.saveAll(lockedPlayers);
     }
 }
