@@ -47,11 +47,25 @@ public class InitialDataLoader implements CommandLineRunner {
 
         locationRepository.saveAll(Arrays.asList(location1, location2, location3));
 
-        Player player = Player.builder()
-                .name("TestName")
+        Player player1 = Player.builder()
+                .name("TestName1")
                 .location(location1)
                 .build();
 
-        playerRepository.save(player);
+        playerRepository.save(player1);
+
+        Player player2 = Player.builder()
+                .name("TestName2")
+                .location(location2)
+                .build();
+
+        playerRepository.save(player2);
+
+        Player player3 = Player.builder()
+                .name("TestName3")
+                .location(location3)
+                .build();
+
+        playerRepository.save(player3);
     }
 }

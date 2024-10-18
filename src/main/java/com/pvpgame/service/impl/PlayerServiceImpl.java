@@ -1,7 +1,9 @@
 package com.pvpgame.service.impl;
 
-import com.pvpgame.dto.PlayerDto;
-import com.pvpgame.dto.mapper.PlayerDtoMapper;
+import com.pvpgame.dto.PlayerContextDTO;
+import com.pvpgame.dto.PlayerToChooseDTO;
+import com.pvpgame.dto.mapper.PlayerContextDTOMapper;
+import com.pvpgame.dto.mapper.PlayerToChooseDTOMapper;
 import com.pvpgame.exception.*;
 import com.pvpgame.model.Direction;
 import com.pvpgame.model.Location;
@@ -20,13 +22,28 @@ import java.util.stream.Collectors;
 public class PlayerServiceImpl implements PlayerService {
 
     private final PlayerRepository playerRepository;
-    private final PlayerDtoMapper playerDtoMapper;
+    private final PlayerContextDTOMapper playerContextDTOMapper;
+    private final PlayerToChooseDTOMapper playerToChooseDTOMapper;
+
+    @Override
+    public List<PlayerToChooseDTO> getAllFreePlayers() {
+        return playerRepository.findAllByLockedBy(null)
+                .stream()
+                .map(playerToChooseDTOMapper)
+                .collect(Collectors.toList());
+    }
 
     @Override
     @Transactional
-    public void selectPlayer(Long playerId, String sessionId) {
+    public PlayerContextDTO selectPlayer(Long playerId, String sessionId) {
+
+        long count = playerRepository.countByLockedBy(sessionId);
+        if (count > 0) {
+            throw new PlayerAlreadySelectedByUserException(playerId);
+        }
+
         Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new PlayerNotFoundException(playerId));
+                .orElseThrow(() -> new PlayerNotFoundException(playerId.toString()));
 
         if (player.getLockedBy() != null) {
             if (player.getLockedBy().equals(sessionId)) {
@@ -38,54 +55,34 @@ public class PlayerServiceImpl implements PlayerService {
         player.setLockedBy(sessionId);
 
         playerRepository.save(player);
+
+        return playerContextDTOMapper.apply(player);
     }
 
     @Override
     @Transactional
-    public void unlockPlayer(Long playerId, String sessionId) {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new PlayerNotFoundException(playerId));
-
-        verifyAccess(player, sessionId);
+    public void unlockPlayer(String sessionId) {
+        Player player = playerRepository.findByLockedBy(sessionId)
+                .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
         player.setLockedBy(null);
         playerRepository.save(player);
     }
 
     @Override
-    public PlayerDto getPlayer(Long playerId) {
-        return playerDtoMapper.apply(playerRepository.findById(playerId)
-                .orElseThrow(() -> new PlayerNotFoundException(playerId)));
-    }
+    public PlayerContextDTO getPlayerContext(String sessionId) {
 
-    @Override
-    public List<PlayerDto> getAllPlayers() {
-        List<Player> players = playerRepository.findAll();
+        Player player = playerRepository.findByLockedBy(sessionId)
+                .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
-        return players
-                .stream()
-                .map(playerDtoMapper)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public void verifyAccess(Player player, String sessionId) {
-        if (player.getLockedBy() == null) {
-            throw new UnauthorizedAccessException("Player is not currently locked.");
-        }
-
-        if (!sessionId.equals(player.getLockedBy())) {
-            throw new UnauthorizedAccessException("You are not authorized to perform this action on the player.");
-        }
+        return playerContextDTOMapper.apply(player);
     }
 
     @Override
     @Transactional
-    public PlayerDto movePlayer(Long playerId, Direction direction, String sessionId) {
-        Player player = playerRepository.findById(playerId)
-                .orElseThrow(() -> new PlayerNotFoundException(playerId));
-
-        verifyAccess(player, sessionId);
+    public PlayerContextDTO movePlayer(String sessionId, Direction direction) {
+        Player player = playerRepository.findBasicByLockedBy(sessionId)
+                .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
         Location location = player.getLocation();
         Location newLocation = location.getNeighbors().get(direction);
@@ -95,19 +92,11 @@ public class PlayerServiceImpl implements PlayerService {
         }
 
         player.setLocation(newLocation);
+        playerRepository.save(player);
 
-        return playerDtoMapper.apply(playerRepository.save(player));
-    }
+        Player updatedPlayer = playerRepository.findByLockedBy(sessionId)
+                .orElseThrow(() -> new PlayerNotFoundException(sessionId));
 
-    @Override
-    @Transactional
-    public void releasePlayersBySession(String sessionId) {
-        List<Player> lockedPlayers = playerRepository.findByLockedBy(sessionId);
-
-        for (Player player : lockedPlayers){
-            player.setLockedBy(null);
-        }
-
-        playerRepository.saveAll(lockedPlayers);
+        return playerContextDTOMapper.apply(updatedPlayer);
     }
 }

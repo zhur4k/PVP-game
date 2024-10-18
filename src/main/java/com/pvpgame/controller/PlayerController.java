@@ -1,6 +1,7 @@
 package com.pvpgame.controller;
 
-import com.pvpgame.dto.PlayerDto;
+import com.pvpgame.dto.PlayerContextDTO;
+import com.pvpgame.dto.PlayerToChooseDTO;
 import com.pvpgame.model.Direction;
 import com.pvpgame.service.PlayerService;
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
@@ -32,20 +33,8 @@ public class PlayerController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping
-    public ResponseEntity<List<PlayerDto>> getAllPlayers(){
-        return ResponseEntity.ok(playerService.getAllPlayers());
-    }
-
-    @Operation(summary = "Get a specific player", description = "Fetches details of a specific player by their ID.")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Successfully retrieved player details"),
-            @ApiResponse(responseCode = "404", description = "Player not found"),
-            @ApiResponse(responseCode = "500", description = "Internal server error")
-    })
-    @GetMapping("/{playerId}")
-    public ResponseEntity<PlayerDto> getPlayer(
-            @PathVariable Long playerId){
-        return ResponseEntity.ok(playerService.getPlayer(playerId));
+    public ResponseEntity<List<PlayerToChooseDTO>> getAllPlayers(){
+        return ResponseEntity.ok(playerService.getAllFreePlayers());
     }
 
     @Operation(summary = "Select a player", description = "Selects a player by their ID and locks them for the current session.")
@@ -56,10 +45,21 @@ public class PlayerController {
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
     @GetMapping("/{playerId}/select")
-    public ResponseEntity<Void> selectPlayer(
+    public ResponseEntity<PlayerContextDTO> selectPlayer(
             @PathVariable Long playerId, HttpSession session){
-        playerService.selectPlayer(playerId, session.getId());
-        return ResponseEntity.ok().build();
+        return ResponseEntity.ok(playerService.selectPlayer(playerId, session.getId()));
+    }
+
+    @Operation(summary = "Get a client player", description = "Fetches details of a client player by client sessionId.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved player details"),
+            @ApiResponse(responseCode = "404", description = "Player not found"),
+            @ApiResponse(responseCode = "500", description = "Internal server error")
+    })
+    @GetMapping("/player")
+    public ResponseEntity<PlayerContextDTO> getPlayerContext(
+            HttpSession session){
+        return ResponseEntity.ok(playerService.getPlayerContext(session.getId()));
     }
 
     @Operation(summary = "Move player", description = "Moves the player in the specified direction.")
@@ -68,10 +68,10 @@ public class PlayerController {
             @ApiResponse(responseCode = "404", description = "Player or destination not found"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @PostMapping("/{playerId}/move")
-    public ResponseEntity<PlayerDto> movePlayer(
-            @PathVariable Long playerId, @RequestParam Direction direction, HttpSession session){
-        return ResponseEntity.ok(playerService.movePlayer(playerId,direction,session.getId()));
+    @PostMapping("/move")
+    public ResponseEntity<PlayerContextDTO> movePlayer(
+            @RequestParam Direction direction, HttpSession session){
+        return ResponseEntity.ok(playerService.movePlayer(session.getId(), direction));
     }
 
     @Operation(summary = "Unlock a player", description = "Unlocks the player, allowing others to select them.")
@@ -81,10 +81,10 @@ public class PlayerController {
             @ApiResponse(responseCode = "403", description = "Access denied to unlock the player"),
             @ApiResponse(responseCode = "500", description = "Internal server error")
     })
-    @GetMapping("/{playerId}/unlock")
+    @GetMapping("/unlock")
     public ResponseEntity<Void> unlockPlayer(
-            @PathVariable Long playerId, HttpSession session){
-        playerService.unlockPlayer(playerId, session.getId());
+            HttpSession session){
+        playerService.unlockPlayer(session.getId());
         return ResponseEntity.ok().build();
     }
 }

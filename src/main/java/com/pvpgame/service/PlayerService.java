@@ -1,8 +1,8 @@
 package com.pvpgame.service;
 
-import com.pvpgame.dto.PlayerDto;
+import com.pvpgame.dto.PlayerContextDTO;
+import com.pvpgame.dto.PlayerToChooseDTO;
 import com.pvpgame.model.Direction;
-import com.pvpgame.model.Player;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -10,17 +10,13 @@ import java.util.List;
 @Service
 public interface PlayerService {
 
-    void selectPlayer(Long playerId, String sessionId);
+    List<PlayerToChooseDTO> getAllFreePlayers();
 
-    void unlockPlayer(Long playerId, String sessionId);
+    PlayerContextDTO selectPlayer(Long playerId, String sessionId);
 
-    PlayerDto getPlayer(Long playerId);
+    PlayerContextDTO getPlayerContext(String sessionId);
 
-    List<PlayerDto> getAllPlayers();
+    PlayerContextDTO  movePlayer(String sessionId, Direction direction);
 
-    void verifyAccess(Player player, String sessionId);
-
-    PlayerDto movePlayer(Long playerId, Direction direction, String sessionId);
-
-    void releasePlayersBySession(String sessionId);
+    void unlockPlayer(String sessionId);
 }

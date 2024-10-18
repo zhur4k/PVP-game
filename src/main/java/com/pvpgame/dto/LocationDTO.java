@@ -1,12 +1,21 @@
 package com.pvpgame.dto;
 
-import java.util.List;
+import com.pvpgame.model.Direction;
 
-public record LocationDto(
+import java.util.List;
+import java.util.Map;
+
+public record LocationDTO(
         Long id,
+
         int x,
+
         int y,
+
+        Map<Direction, Long> neighbors,
+
         List<Long> players,
+
         List<Long> enemies
 ) {
 }

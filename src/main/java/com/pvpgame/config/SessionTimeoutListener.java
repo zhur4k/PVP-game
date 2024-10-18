@@ -16,6 +16,6 @@ public class SessionTimeoutListener implements HttpSessionListener {
     public void sessionDestroyed(HttpSessionEvent event){
         String sessionId = event.getSession().getId();
 
-        playerService.releasePlayersBySession(sessionId);
+        playerService.unlockPlayer(sessionId);
     }
 }
