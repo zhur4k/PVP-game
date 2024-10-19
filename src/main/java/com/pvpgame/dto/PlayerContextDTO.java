@@ -5,6 +5,8 @@ public record PlayerContextDTO(
 
         String name,
 
+        boolean shouldBattle,
+
         LocationDTO location
 ) {
 }

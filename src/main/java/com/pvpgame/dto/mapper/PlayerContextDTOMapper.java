@@ -19,6 +19,7 @@ public class PlayerContextDTOMapper implements Function<Player, PlayerContextDTO
         return new PlayerContextDTO(
                 player.getId(),
                 player.getName(),
+                player.isShouldBattle(),
                 locationDtoMapper.apply(location)
         );
     }

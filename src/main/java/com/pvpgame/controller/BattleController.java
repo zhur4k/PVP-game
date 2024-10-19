@@ -59,6 +59,6 @@ public class BattleController {
     @GetMapping("/apologize")
     public ResponseEntity<String> apologize(HttpSession session){
         battleService.apologize(session.getId());
-        return ResponseEntity.ok("Battle ended! You apologize.");
+        return ResponseEntity.ok("Battle ended! You apologized.");
     }
 }
