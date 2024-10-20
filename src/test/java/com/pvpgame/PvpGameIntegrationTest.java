@@ -3,6 +3,7 @@ package com.pvpgame;
 import com.pvpgame.dto.PlayerContextDTO;
 import com.pvpgame.dto.PlayerToChooseDTO;
 import com.pvpgame.model.Direction;
+import com.pvpgame.model.Location;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,9 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.Arrays;
-import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -22,10 +20,11 @@ public class PvpGameIntegrationTest {
     @Autowired
     private TestRestTemplate restTemplate;
 
-    private Long playerId;
+
+    private PlayerToChooseDTO[] players;
 
     @BeforeEach
-    public void SetUp(){
+    public void SetUp() {
         ResponseEntity<PlayerToChooseDTO[]> response = restTemplate.getForEntity("/players", PlayerToChooseDTO[].class);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -33,37 +32,100 @@ public class PvpGameIntegrationTest {
         PlayerToChooseDTO[] players = response.getBody();
 
         assertNotNull(players, "Failed to load players from InitialDataLoader.");
+        this.players = players;
 
-        Random random = new Random();
-
-        playerId = players[random.nextInt(players.length)].id();
     }
 
     @Test
     @Transactional
-    void selectAndMovePlayerTest(){
-        HttpHeaders headers = new HttpHeaders();
-        ResponseEntity<PlayerContextDTO> selectResponse = restTemplate.exchange(
-                "/players/" + playerId + "/select", HttpMethod.GET, new HttpEntity<>(headers), PlayerContextDTO.class);
+    void selectAndMovePlayerTest() {
+        for (PlayerToChooseDTO player : players) {
+            Long playerId = player.id();
+            HttpHeaders headers = new HttpHeaders();
+            ResponseEntity<PlayerContextDTO> selectResponse = restTemplate.exchange(
+                    "/players/" + playerId + "/select", HttpMethod.GET, new HttpEntity<>(headers), PlayerContextDTO.class);
 
-        assertEquals(HttpStatus.OK, selectResponse.getStatusCode());
+            assertEquals(HttpStatus.OK, selectResponse.getStatusCode());
 
-        String sessionId = selectResponse.getHeaders().getFirst("Set-Cookie");
-        assertNotNull(sessionId, "Session ID should not be null after selecting player.");
+            String sessionId = selectResponse.getHeaders().getFirst("Set-Cookie");
+            assertNotNull(sessionId, "Session ID should not be null after selecting player.");
 
-        headers.add("Cookie", sessionId);
+            headers.add("Cookie", sessionId);
+            PlayerContextDTO playerContextDTO = selectResponse.getBody();
 
-        HttpEntity<Direction> request = new HttpEntity<>(Direction.UP, headers);
-        ResponseEntity<PlayerContextDTO> moveResponse = restTemplate.exchange(
-                "/players/move?direction=UP",
-                HttpMethod.POST,
-                request,
-                PlayerContextDTO.class);
+            for (int i = 0; i < 5; i++) {
+                if (!playerContextDTO.shouldBattle()) {
 
-        assertEquals(HttpStatus.OK, moveResponse.getStatusCode());
+                    Direction direction = null;
+                    for (Direction tempDirection : Direction.values()){
+                        if(tempDirection != null){
+                            direction = tempDirection;
+                            break;
+                        }
+                    }
 
-        PlayerContextDTO movedPlayer = moveResponse.getBody();
-        assertNotNull(movedPlayer);
-        assertEquals(movedPlayer.id(), playerId);
+                    if(direction == null){
+                        continue;
+                    }
+                    HttpEntity<Direction> request = new HttpEntity<>(direction, headers);
+                    ResponseEntity<PlayerContextDTO> moveResponse = restTemplate.exchange(
+                            "/players/move?direction=" + direction.name(),
+                            HttpMethod.POST,
+                            new HttpEntity<>(headers),
+                            PlayerContextDTO.class);
+
+                    assertEquals(HttpStatus.OK, moveResponse.getStatusCode());
+
+                    playerContextDTO = moveResponse.getBody();
+                    assertNotNull(playerContextDTO);
+                    assertEquals(playerContextDTO.id(), playerId);
+                } else {
+                    if (i % 2 == 0) {
+                        ResponseEntity<String> battleResponse = restTemplate.exchange(
+                                "/battle/start",
+                                HttpMethod.GET,
+                                new HttpEntity<>(headers),
+                                String.class);
+
+                        assertEquals(HttpStatus.OK, battleResponse.getStatusCode());
+                        assertEquals("Battle started!", battleResponse.getBody());
+
+                        ResponseEntity<String> endResponse = restTemplate.exchange(
+                                "/battle/end",
+                                HttpMethod.GET,
+                                new HttpEntity<>(headers),
+                                String.class);
+
+                        assertEquals(HttpStatus.OK, endResponse.getStatusCode());
+                        assertEquals("Battle ended!", endResponse.getBody());
+
+                    } else {
+                        ResponseEntity<String> apologizeResponse = restTemplate.exchange(
+                                "/battle/apologize",
+                                HttpMethod.GET,
+                                new HttpEntity<>(headers),
+                                String.class);
+
+                        assertEquals(HttpStatus.OK, apologizeResponse.getStatusCode());
+                        assertEquals("Battle ended! You apologized.", apologizeResponse.getBody());
+                    }
+                }
+                ResponseEntity<PlayerContextDTO> updatedPlayerResponse = restTemplate.exchange(
+                        "/player",
+                        HttpMethod.GET,
+                        new HttpEntity<>(headers),
+                        PlayerContextDTO.class);
+
+                playerContextDTO = updatedPlayerResponse.getBody();
+                assertNotNull(playerContextDTO);
+            }
+            ResponseEntity<Void> unlockResponse = restTemplate.exchange(
+                    "/players/unlock",
+                    HttpMethod.GET,
+                    new HttpEntity<>(headers),
+                    Void.class);
+
+            assertEquals(HttpStatus.OK, unlockResponse.getStatusCode(), "Player should be successfully unlocked.");
+        }
     }
 }
